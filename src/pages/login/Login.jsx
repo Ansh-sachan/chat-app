@@ -1,9 +1,22 @@
 import React, { useState } from "react";
 import "./login.css";
 import assets from "../../assets/assets";
+import { signup, login } from "../../config/firebase";
 const Login = () => {
   let [currentState, setCurrentState] = useState("signup");
-
+  let [userData, setUserData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (currentState === "signup") {
+      signup(userData.username, userData.email, userData.password);
+    } else {
+      login(userData.email, userData.password);
+    }
+  };
   return (
     <div className='login'>
       <img src={assets.logo_big} alt='' className='max-w-[20vw]' />
@@ -16,6 +29,10 @@ const Login = () => {
             type='text'
             className='p-2 outline-2 border-2 border-blue-400 rounded-lg'
             placeholder='Username'
+            value={userData.username}
+            onChange={(e) =>
+              setUserData({ ...userData, username: e.target.value })
+            }
           />
         ) : (
           ""
@@ -25,13 +42,22 @@ const Login = () => {
           type='text'
           className='p-2 outline-2 border-2 border-blue-400 rounded-lg'
           placeholder='Email address'
+          value={userData.email}
+          onChange={(e) => setUserData({ ...userData, email: e.target.value })}
         />
         <input
           type='password'
           className='p-2 outline-2 border-2 border-blue-400 rounded-lg'
           placeholder='password'
+          value={userData.password}
+          onChange={(e) =>
+            setUserData({ ...userData, password: e.target.value })
+          }
         />
-        <button className='bg-blue-500 py-2 capitalize text-white text-xl hover:bg-blue-600 rounded-lg'>
+        <button
+          className='bg-blue-500 py-2 capitalize text-white text-xl hover:bg-blue-600 rounded-lg'
+          onClick={handleSubmit}
+        >
           {currentState === "signup" ? "create account" : "Login Now"}
         </button>
         <div className='flex'>

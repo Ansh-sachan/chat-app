@@ -1,0 +1,6 @@
+.chat-msg{
+    height: calc(100% - 200px);
+    overflow-y: scroll;
+    display: flex ;
+    flex-direction: column-reverse;
+}
