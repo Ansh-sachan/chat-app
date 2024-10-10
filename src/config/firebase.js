@@ -31,7 +31,7 @@ export const signup = async (username,email,password)=>{
             lastSeen:Date.now()
         })
         await setDoc(doc(db,"chats",user.uid),{
-            chatData:[]
+            chatsData:[]
         })
         toast.success("signed up successfully")
     } catch (error) {
