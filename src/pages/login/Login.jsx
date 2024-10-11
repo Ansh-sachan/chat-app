@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./login.css";
 import assets from "../../assets/assets";
-import { signup, login } from "../../config/firebase";
+import { signup, login, resetPass } from "../../config/firebase";
 const Login = () => {
   let [currentState, setCurrentState] = useState("signup");
   let [userData, setUserData] = useState({
@@ -61,7 +61,7 @@ const Login = () => {
           {currentState === "signup" ? "create account" : "Login Now"}
         </button>
         <div className='flex'>
-          <input type='checkbox' />
+          <input type='checkbox' required />
           <p className='ml-2'>
             Agree to the terms and conditions of use & privacy policy
           </p>
@@ -83,6 +83,19 @@ const Login = () => {
             </span>
           </p>
         </div>
+        {currentState === "login" ? (
+          <div>
+            <p>
+              Forgot Password ?
+              <span
+                className='text-blue-600 cursor-pointer ml-2'
+                onClick={() => resetPass(userData.email)}
+              >
+                Reset password
+              </span>
+            </p>
+          </div>
+        ) : null}
       </form>
     </div>
   );

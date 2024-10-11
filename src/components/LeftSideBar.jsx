@@ -5,6 +5,7 @@ import {
   arrayUnion,
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   serverTimestamp,
@@ -89,9 +90,23 @@ const LeftSideBar = () => {
       console.error(error);
     }
   };
-  const setChat = (item) => {
+  const setChat = async (item) => {
     setMessagesId(item.messageId);
     setChatUser(item);
+    try {
+      const userChatRef = doc(db, "chats", userData.id);
+      const userChatSnapShot = await getDoc(userChatRef);
+      const userChatData = userChatSnapShot.data();
+      const chatIndex = userChatData.chatsData.findIndex(
+        (e) => e.messageId === item.messageId
+      );
+      userChatData.chatsData[chatIndex].messageSeen = true;
+      await updateDoc(userChatRef, {
+        chatsData: userChatData.chatsData,
+      });
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
   return (
     <aside className='w-1/3 h-full overflow-y-scroll pb-8'>
@@ -167,7 +182,15 @@ const LeftSideBar = () => {
                 </figure>
                 <div>
                   <h3 className='text-white'>{item.userData.name} </h3>
-                  <p>{item.lastMessage}</p>
+                  <p
+                    className={
+                      item.messageSeen || item.messageId === messagesId
+                        ? ""
+                        : "text-green-500"
+                    }
+                  >
+                    {item.lastMessage}
+                  </p>
                 </div>
               </div>
             );

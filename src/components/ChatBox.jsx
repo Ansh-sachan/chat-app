@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { toast } from "react-toastify";
+import upload from "../lib/upload";
 
 const ChatBox = () => {
   const { userData, messagesId, chatUser, messages, setMessages } =
@@ -26,7 +27,7 @@ const ChatBox = () => {
             createdAt: new Date(),
           }),
         });
-        let userIDs = [chatUser.rID, userData.id];
+        const userIDs = [chatUser.rID, userData.id];
         userIDs.forEach(async (id) => {
           const userChatRef = doc(db, "chats", id);
           const userChatSnapShot = await getDoc(userChatRef);
@@ -63,6 +64,53 @@ const ChatBox = () => {
     }
   }, [messagesId]);
 
+  const sendImage = async (e) => {
+    try {
+      const fileUrl = await upload(e.target.files[0]);
+      if (fileUrl && messagesId) {
+        await updateDoc(doc(db, "messages", messagesId), {
+          messages: arrayUnion({
+            sID: userData.id,
+            image: fileUrl,
+            createdAt: new Date(),
+          }),
+        });
+        const userIDs = [chatUser.rID, userData.id];
+        userIDs.forEach(async (id) => {
+          const userChatRef = doc(db, "chats", id);
+          const userChatSnapShot = await getDoc(userChatRef);
+          if (userChatSnapShot.exists()) {
+            const userChatData = userChatSnapShot.data();
+            const chatIndex = userChatData.chatsData.findIndex(
+              (c) => c.messageId === messagesId
+            );
+            userChatData.chatsData[chatIndex].lastMessage = "Image";
+            userChatData.chatsData[chatIndex].updatedAt = Date.now();
+            if (userChatData.chatsData[chatIndex].rID === userData.id) {
+              userChatData.chatsData[chatIndex].messageSeen = false;
+            }
+            await updateDoc(userChatRef, {
+              chatsData: userChatData.chatsData,
+            });
+          }
+        });
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const convertTimeStamp = (timeStamp) => {
+    let date = timeStamp.toDate();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    if (hours > 12) {
+      return `${hours - 12} : ${minutes} PM`;
+    } else {
+      return `${hours} : ${minutes} AM`;
+    }
+  };
+
   return (
     <>
       {chatUser && userData ? (
@@ -79,7 +127,9 @@ const ChatBox = () => {
               <h4 className='text-2xl font-semibold'>
                 {chatUser.userData.name}
               </h4>
-              <img src={assets.green_dot} alt='' />
+              {Date.now() - chatUser.userData.lastSeen <= 70000 ? (
+                <img src={assets.green_dot} alt='' />
+              ) : null}
             </div>
             <img src={assets.help_icon} alt='help' className='max-w-6 mr-4' />
           </div>
@@ -90,53 +140,46 @@ const ChatBox = () => {
             {messages.map((msg, index) => {
               return (
                 <div
+                  key={index}
                   className={
                     msg.sID === userData.id
-                      ? "flex w-3/5 flex-row-reverse my-2"
-                      : "flex justify-start w-full my-2"
+                      ? "flex justify-end w-full my-2 items-end"
+                      : "flex w-full flex-row-reverse my-2 justify-end items-end"
                   }
                 >
-                  <p className='bg-blue-500 text-white rounded-t-lg rounded-br-lg text-sm p-2'></p>
-                  <div className='w-32'>
+                  {msg["image"] ? (
                     <img
-                      src={assets.profile_img}
-                      alt='profile'
-                      className='max-w-6 rounded-full mx-auto'
+                      src={msg.image}
+                      alt='message'
+                      className='w-1/2 rounded-lg'
                     />
-                    <p className='text-xs'>2:30 PM</p>
+                  ) : (
+                    <p
+                      className={`bg-blue-500 text-white ${
+                        msg.sID === userData.id
+                          ? "rounded-bl-lg"
+                          : "rounded-br-lg"
+                      } rounded-t-xl text-sm p-2`}
+                    >
+                      {msg.text}
+                    </p>
+                  )}
+
+                  <div className='w- mx-4'>
+                    <img
+                      src={
+                        msg.sID === userData.id
+                          ? userData.avatar
+                          : chatUser.userData.avatar
+                      }
+                      alt='profile'
+                      className='object-contain w-10 h-4 rounded-full my-2'
+                    />
+                    <p className='text-xs'>{convertTimeStamp(msg.createdAt)}</p>
                   </div>
                 </div>
               );
             })}
-            {/* <div className='flex w-3/5 flex-row-reverse my-2'>
-              <p className='bg-blue-500 text-white rounded-t-lg rounded-br-lg text-sm p-2'>
-                Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                Fugiat, enim?
-              </p>
-              <div className='w-32'>
-                <img
-                  src={assets.profile_img}
-                  alt='profile'
-                  className='max-w-6 rounded-full mx-auto'
-                />
-                <p className='text-xs'>2:30 PM</p>
-              </div>
-            </div>
-            <div className='flex justify-start w-full my-2'>
-              <div className='w-3/5'></div>
-              <p className=' bg-blue-500 text-white rounded-t-lg rounded-bl-lg text-sm p-2 w-3/5'>
-                Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                Fugiat, enim?
-              </p>
-              <div className='w-32 ml-2'>
-                <img
-                  src={assets.profile_img}
-                  alt='profile'
-                  className='max-w-6 rounded-full mx-auto'
-                />
-                <p className='text-xs'>2:30 PM</p>
-              </div>
-            </div> */}
           </div>
 
           <div className='flex gap-2 w-full absolute bottom-2 right-0 left-0 items-center'>
@@ -148,6 +191,7 @@ const ChatBox = () => {
               onChange={({ target }) => setInput(target.value)}
             />
             <input
+              onChange={sendImage}
               type='file'
               id='image'
               accept='image/png, image/jpeg'
