@@ -4,7 +4,7 @@ import { logout } from "../config/firebase";
 import { AppContext } from "../context/AppContext";
 
 const RightSideBar = () => {
-  const { chatUser, messages } = useContext(AppContext);
+  const { chatUser, messages, chatVisible } = useContext(AppContext);
   const [msgImages, setMsgImages] = useState([]);
   useEffect(() => {
     let tempVar = [];
@@ -17,7 +17,9 @@ const RightSideBar = () => {
     setMsgImages(tempVar);
   }, [messages]);
   return chatUser ? (
-    <div className='relative'>
+    <div
+      className={`relative basis-1/4 md:block ${chatVisible ? "hidden" : ""}`}
+    >
       <div className='text-center mt-10 text-white'>
         <figure>
           <img

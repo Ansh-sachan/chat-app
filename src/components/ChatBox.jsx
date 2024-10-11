@@ -13,8 +13,15 @@ import { toast } from "react-toastify";
 import upload from "../lib/upload";
 
 const ChatBox = () => {
-  const { userData, messagesId, chatUser, messages, setMessages } =
-    useContext(AppContext);
+  const {
+    userData,
+    messagesId,
+    chatUser,
+    messages,
+    setMessages,
+    chatVisible,
+    setChatVisible,
+  } = useContext(AppContext);
   const [input, setInput] = useState("");
 
   const sendMessage = async () => {
@@ -114,9 +121,19 @@ const ChatBox = () => {
   return (
     <>
       {chatUser && userData ? (
-        <div className='bg-gray-900 text-white w-2/4 h-full relative'>
+        <div
+          className={`bg-black text-white p-2 w-full md:w-2/4 h-full relative ${
+            chatVisible ? "" : "hidden"
+          }`}
+        >
           <div className='flex justify-between items-center p-2'>
             <div className='flex items-center gap-4'>
+              <img
+                src={assets.arrow_icon}
+                alt='arrow'
+                className='max-w-5 md:hidden'
+                onClick={() => setChatVisible(false)}
+              />
               <figure>
                 <img
                   src={chatUser.userData.avatar}
@@ -127,6 +144,7 @@ const ChatBox = () => {
               <h4 className='text-2xl font-semibold'>
                 {chatUser.userData.name}
               </h4>
+
               {Date.now() - chatUser.userData.lastSeen <= 70000 ? (
                 <img src={assets.green_dot} alt='' />
               ) : null}
@@ -182,11 +200,11 @@ const ChatBox = () => {
             })}
           </div>
 
-          <div className='flex gap-2 w-full absolute bottom-2 right-0 left-0 items-center'>
+          <div className='flex gap-2 w-full absolute bottom-2 right-0 left-0 items-center justify-evenly'>
             <input
               type='text'
               placeholder='send a message'
-              className='w-full pl-4 outline-none bg-gray-200 rounded-full p-2 text-black'
+              className='pl-4 w-full outline-none bg-gray-200 rounded-full p-2 text-black'
               value={input}
               onChange={({ target }) => setInput(target.value)}
             />
@@ -213,7 +231,11 @@ const ChatBox = () => {
           </div>
         </div>
       ) : (
-        <div className='flex flex-col text-white text-3xl w-1/2 justify-center items-center my-2'>
+        <div
+          className={`flex flex-col text-white text-3xl w-1/2 justify-center items-center my-2 md:flex bg-black  ${
+            chatVisible ? "" : "hidden"
+          }`}
+        >
           <img
             src={assets.logo_icon}
             alt='logo'

@@ -18,9 +18,9 @@ const Login = () => {
     }
   };
   return (
-    <div className='login'>
+    <div className='login flex-col md:flex-row justify-evenly items-center'>
       <img src={assets.logo_big} alt='' className='max-w-[20vw]' />
-      <form className='flex flex-col gap-4 bg-white rounded-lg px-6 py-10'>
+      <form className='flex flex-col gap-4 bg-white rounded-lg px-6 py-10 mx-4'>
         <h2 className='text-blue-500 text-2xl text-center font-bold my-4 capitalize'>
           {currentState}
         </h2>

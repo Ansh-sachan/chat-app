@@ -27,6 +27,8 @@ const LeftSideBar = () => {
     setChatUser,
     messagesId,
     setMessagesId,
+    chatVisible,
+    setChatVisible,
   } = useContext(AppContext);
   const [user, setUser] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
@@ -93,6 +95,7 @@ const LeftSideBar = () => {
   const setChat = async (item) => {
     setMessagesId(item.messageId);
     setChatUser(item);
+
     try {
       const userChatRef = doc(db, "chats", userData.id);
       const userChatSnapShot = await getDoc(userChatRef);
@@ -104,12 +107,17 @@ const LeftSideBar = () => {
       await updateDoc(userChatRef, {
         chatsData: userChatData.chatsData,
       });
+      setChatVisible(true);
     } catch (error) {
       toast.error(error.message);
     }
   };
   return (
-    <aside className='w-1/3 h-full overflow-y-scroll pb-8'>
+    <aside
+      className={`md:w-1/3 resize-x h-full w-full overflow-y-scroll pb-8 md:block ${
+        chatVisible ? "hidden" : ""
+      }`}
+    >
       {/* menu  */}
       <div className='flex p-4 items-center justify-between relative'>
         <img src={assets.logo} alt='logo' className='max-w-40 object-contain' />
